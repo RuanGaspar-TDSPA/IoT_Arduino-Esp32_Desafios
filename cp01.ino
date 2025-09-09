@@ -21,10 +21,27 @@ DHT dht(DHTpino, DHTtipo);
 
 int contador = 0;
 int sttcontador = 0;
-boolean statusbtA, flagA; 
-boolean statusbtB, flagB; 
-boolean statusbtC, flagC; 
-boolean statusbtD, flagD;
+boolean flagA_ex01 = 0;
+boolean flagA_ex02 = 1;
+boolean flagB_ex02 = 1;
+boolean flagC_ex02 = 1;
+boolean flagC_03;
+
+boolean statusbtA_ex01;
+boolean statusbtA_ex02, statusbtB_ex02, statusbtC_ex02; 
+boolean statusbtC, flagC; //Alterar conforme exercicios 3-5 
+boolean statusbtD, flagD; //Alterar confrome exercicios 3-5
+
+unsigned long ultimoTempobtA = 0;
+unsigned long ultimoTempobtB = 0;
+unsigned long ultimoTempobtC = 0;
+const unsigned long debounceInterval = 150;
+
+int placar_1 = 0;
+int placar_2 = 0;
+int ultPlacar_1 = -1;
+int ultPlacar_2 = -1;
+
 
 void piscarLd(int pino, int vezes) {
       for(int i = 0; i < vezes; i++){
@@ -47,32 +64,40 @@ pinMode(btC, INPUT_PULLUP);
 pinMode(btD, INPUT_PULLUP);
 pinMode(A0, INPUT);
 
-statusbtA = digitalRead(btA);
-statusbtB = digitalRead(btB);
-statusbtC = digitalRead(btC);
-statusbtD = digitalRead(btD);
+flagA_ex01 = 0;
+flagA_ex02 = 1;
+flagB_ex02 = 1;
+flagC_ex02 = 1;
+
+statusbtA_ex01 = digitalRead(btA);
+
+statusbtA_ex02 = digitalRead(btA);
+statusbtB_ex02 = digitalRead(btB);
+statusbtC_ex02 = digitalRead(btC);
+
+ultPlacar_1 = -1;
+ultPlacar_2 = -1;
 
 dht.begin();
 Serial.begin(115200);
 Serial.println("Esquema iniciado...");
-
 }
 
 void loop() {
-  ex01();
+  //ex01();
+  ex02();
 }
 
-
   void ex01(){
-    statusbtA = digitalRead(btA);
+    statusbtA_ex01 = digitalRead(btA);
     delay(10); 
-    if(statusbtA == 0 && flagA == 0){
+    if(statusbtA_ex01 == 0 && flagA_ex01 == 0){
           contador ++;
-          flagA = 1;
+          flagA_ex01 = 1;
     if(contador > 5) contador = 5;    
     }
-    if(statusbtA == 1 && flagA == 1){     
-      flagA = 0;
+    if(statusbtA_ex01 == 1 && flagA_ex01 == 1){     
+      flagA_ex01 = 0;
     }
     if(contador >= 1 && contador <= 5) {  
     }
@@ -108,11 +133,59 @@ void loop() {
     }
   }
 
-
-
-
 void ex02(){
+  statusbtA_ex02 = digitalRead(btA);
+  statusbtB_ex02 = digitalRead(btB);
+  statusbtC_ex02 = digitalRead(btC);
+
+  unsigned long tempoAtual = millis();
   
+  if(statusbtA_ex02 == 0 && flagA_ex02 == 1) {
+    if(tempoAtual - ultimoTempobtA > debounceInterval){
+      if(placar_1 < 10) {
+      placar_1 ++;
+      }
+      flagA_ex02 = 0;
+      ultimoTempobtA = tempoAtual;
+      }
+    } else if(statusbtA_ex02 == 1) {
+    if(tempoAtual - ultimoTempobtA > debounceInterval){
+      flagA_ex02 = 1;
+    }
+  }
+  if(statusbtB_ex02 == 0 && flagB_ex02 == 1) {
+    if(tempoAtual - ultimoTempobtB > debounceInterval){
+      if(placar_2 < 10) {
+      placar_2 ++;
+      }
+      flagB_ex02 = 0;
+      ultimoTempobtB = tempoAtual;
+    } 
+  } else if(statusbtB_ex02 == 1) {
+    if(tempoAtual - ultimoTempobtB > debounceInterval){
+      flagB_ex02 = 1;
+    }
+  }
+  if(statusbtC_ex02 == 0 && flagC_ex02 == 1) {
+    if(tempoAtual - ultimoTempobtC > debounceInterval){
+      placar_1 = 0;
+      placar_2 = 0;
+      flagC_ex02 = 0;
+      ultimoTempobtC = tempoAtual;
+    }
+  } else if(statusbtC_ex02 == 1) {
+    if(tempoAtual - ultimoTempobtC > debounceInterval){
+      flagC_ex02 = 1;
+    }
+  }
+  if(placar_1 != ultPlacar_1 || placar_2 != ultPlacar_2){
+    Serial.print(placar_1);
+    Serial.print(" ");
+    Serial.println(placar_2);
+    ultPlacar_1 = placar_1;
+    ultPlacar_2 = placar_2;
+  }
+
 }
 
 void ex03(){
